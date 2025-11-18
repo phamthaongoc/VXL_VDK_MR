@@ -11,7 +11,7 @@
 sTask SCH_tasks[SCH_MAX_TASKS];
 volatile uint32_t tick_ms = 0;
 
-extern void SCH_Hook_Tick_LED(void);
+//extern void SCH_Hook_Tick_LED(void);
 
 void SCH_Init(void)
 {
@@ -27,7 +27,7 @@ void SCH_Update(void)   // gọi mỗi 10 ms từ timer
 {
     tick_ms += 10;
 
-    SCH_Hook_Tick_LED(); // Nháy LED báo scheduler chạy
+    //SCH_Hook_Tick_LED(); // Nháy LED báo scheduler chạy
 
     for (int i = 0; i < SCH_MAX_TASKS; i++) {
         if (SCH_tasks[i].pTask) {

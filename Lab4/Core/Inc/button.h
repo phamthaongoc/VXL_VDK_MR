@@ -8,6 +8,7 @@
 #ifndef INC_BUTTON_H_
 #define INC_BUTTON_H_
 
+#include "main.h"
 
 #define N_BUTTONS 1
 #define LONG_PRESS_TIME 200

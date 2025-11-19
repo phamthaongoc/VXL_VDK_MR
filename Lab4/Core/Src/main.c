@@ -107,15 +107,15 @@ int main(void)
    SCH_Init();
 
    SCH_Add_Task(Task_LED1, 0,   500);   // 0 ms delay,   500 ms
-   SCH_Add_Task(Task_LED2, 10, 1000);   // 100 ms delay, 1000 ms
-   SCH_Add_Task(Task_LED3, 20, 1500);   // 200 ms delay, 1500 ms
-   SCH_Add_Task(Task_LED4, 30, 2000);   // 300 ms delay, 2000 ms
+   SCH_Add_Task(Task_LED2, 50, 1000);   // 100 ms delay, 1000 ms
+   SCH_Add_Task(Task_LED3, 100, 1500);   // 200 ms delay, 1500 ms
+   SCH_Add_Task(Task_LED4, 150, 2000);   // 300 ms delay, 2000 ms
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  getKeyInput();
+	 // getKeyInput();
 
 	          if (isButtonPressed()) {
 	              SCH_Add_Task(Task_OneShot, 0, 0);
@@ -251,6 +251,7 @@ static void MX_GPIO_Init(void)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	SCH_Update();     // TICK = 10 ms
+	getKeyInput();
 }
 void Task_LED1() {
     LED1_Toggle();

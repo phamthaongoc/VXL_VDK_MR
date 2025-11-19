@@ -98,6 +98,7 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
+  HAL_TIM_Base_Start_IT(&htim2);
 
   /* USER CODE END 2 */
 
@@ -106,9 +107,9 @@ int main(void)
    SCH_Init();
 
    SCH_Add_Task(Task_LED1, 0,   500);   // 0 ms delay,   500 ms
-   SCH_Add_Task(Task_LED2, 100, 1000);   // 100 ms delay, 1000 ms
-   SCH_Add_Task(Task_LED3, 200, 1500);   // 200 ms delay, 1500 ms
-   SCH_Add_Task(Task_LED4, 300, 2000);   // 300 ms delay, 2000 ms
+   SCH_Add_Task(Task_LED2, 10, 1000);   // 100 ms delay, 1000 ms
+   SCH_Add_Task(Task_LED3, 20, 1500);   // 200 ms delay, 1500 ms
+   SCH_Add_Task(Task_LED4, 30, 2000);   // 300 ms delay, 2000 ms
   while (1)
   {
     /* USER CODE END WHILE */
@@ -117,7 +118,7 @@ int main(void)
 	  getKeyInput();
 
 	          if (isButtonPressed()) {
-	              SCH_Add_Task(Task_OneShot, 100, 0);
+	              SCH_Add_Task(Task_OneShot, 0, 0);
 	          }
 
 	          SCH_Dispatch_Tasks();
@@ -268,9 +269,7 @@ void Task_LED4(void) {
 }
 
 void Task_OneShot() {
-    LED_OneShot_On();
-    HAL_Delay(200);
-    LED_OneShot_Off();
+    LED_OneShot();
 }
 
 /* USER CODE END 4 */

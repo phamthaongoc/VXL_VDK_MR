@@ -15,6 +15,7 @@ int button_buffer1[N_BUTTONS];
 int button_buffer2[N_BUTTONS];
 int button_buffer3[N_BUTTONS];
 int press_timer[N_BUTTONS];
+int last_button_state[N_BUTTONS] = {NORMAL_STATE};
 
 void subKeyProcess(int index) {
     button_flag[index] = 1;
@@ -40,7 +41,7 @@ void getKeyInput() {
         if (button_state[0] != button_buffer3[0]) {
             button_state[0] = button_buffer3[0];
 
-            if (button_state[0] == PRESSED_STATE) {
+            if (button_state[0] == PRESSED_STATE && last_button_state[0] == NORMAL_STATE) {
                 subKeyProcess(0);
                 press_timer[0] = LONG_PRESS_TIME;
             }
@@ -53,5 +54,6 @@ void getKeyInput() {
                 }
             }
         }
+        last_button_state[0] = button_state[0];
     }
 }

@@ -16,7 +16,6 @@ void LED2_Toggle(void);
 void LED3_Toggle(void);
 void LED4_Toggle(void);
 
-void LED_OneShot_On(void);
-void LED_OneShot_Off(void);
+void LED_OneShot(void);
 
 #endif /* INC_LED_CONTROL_H_ */

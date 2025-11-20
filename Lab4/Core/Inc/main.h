@@ -57,18 +57,60 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define BUTTON_Pin GPIO_PIN_13
-#define BUTTON_GPIO_Port GPIOC
-#define LED1_Pin GPIO_PIN_3
-#define LED1_GPIO_Port GPIOA
-#define LED2_Pin GPIO_PIN_4
-#define LED2_GPIO_Port GPIOA
-#define LED3_Pin GPIO_PIN_5
-#define LED3_GPIO_Port GPIOA
-#define LED4_Pin GPIO_PIN_6
-#define LED4_GPIO_Port GPIOA
-#define LED_ONESHOT_Pin GPIO_PIN_7
-#define LED_ONESHOT_GPIO_Port GPIOA
+#define MODE_Pin GPIO_PIN_13
+#define MODE_GPIO_Port GPIOC
+#define NAV1G_Pin GPIO_PIN_0
+#define NAV1G_GPIO_Port GPIOA
+#define NAV1Y_Pin GPIO_PIN_1
+#define NAV1Y_GPIO_Port GPIOA
+#define NAV1R_Pin GPIO_PIN_2
+#define NAV1R_GPIO_Port GPIOA
+#define NAV2G_Pin GPIO_PIN_3
+#define NAV2G_GPIO_Port GPIOA
+#define NAV2Y_Pin GPIO_PIN_4
+#define NAV2Y_GPIO_Port GPIOA
+#define NAV2R_Pin GPIO_PIN_5
+#define NAV2R_GPIO_Port GPIOA
+#define EN0_Pin GPIO_PIN_6
+#define EN0_GPIO_Port GPIOA
+#define EN1_Pin GPIO_PIN_7
+#define EN1_GPIO_Port GPIOA
+#define SEG1a_Pin GPIO_PIN_0
+#define SEG1a_GPIO_Port GPIOB
+#define SEG1b_Pin GPIO_PIN_1
+#define SEG1b_GPIO_Port GPIOB
+#define SEG1c_Pin GPIO_PIN_2
+#define SEG1c_GPIO_Port GPIOB
+#define SEG1d_Pin GPIO_PIN_10
+#define SEG1d_GPIO_Port GPIOB
+#define SEG2e_Pin GPIO_PIN_11
+#define SEG2e_GPIO_Port GPIOB
+#define SEG2f_Pin GPIO_PIN_12
+#define SEG2f_GPIO_Port GPIOB
+#define SEG2g_Pin GPIO_PIN_13
+#define SEG2g_GPIO_Port GPIOB
+#define SET_Pin GPIO_PIN_14
+#define SET_GPIO_Port GPIOB
+#define EN2_Pin GPIO_PIN_8
+#define EN2_GPIO_Port GPIOA
+#define EN3_Pin GPIO_PIN_9
+#define EN3_GPIO_Port GPIOA
+#define INCREASE_Pin GPIO_PIN_13
+#define INCREASE_GPIO_Port GPIOA
+#define SEG1dB3_Pin GPIO_PIN_3
+#define SEG1dB3_GPIO_Port GPIOB
+#define SEG1e_Pin GPIO_PIN_4
+#define SEG1e_GPIO_Port GPIOB
+#define SEG1f_Pin GPIO_PIN_5
+#define SEG1f_GPIO_Port GPIOB
+#define SEG1g_Pin GPIO_PIN_6
+#define SEG1g_GPIO_Port GPIOB
+#define SEG2a_Pin GPIO_PIN_7
+#define SEG2a_GPIO_Port GPIOB
+#define SEG2b_Pin GPIO_PIN_8
+#define SEG2b_GPIO_Port GPIOB
+#define SEG2c_Pin GPIO_PIN_9
+#define SEG2c_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

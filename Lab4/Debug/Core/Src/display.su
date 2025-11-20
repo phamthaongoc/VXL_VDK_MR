@@ -1,0 +1,5 @@
+../Core/Src/display.c:26:6:setNumber	16	static
+../Core/Src/display.c:38:13:display7seg_output	32	static
+../Core/Src/display.c:52:13:disableAllEN	8	static
+../Core/Src/display.c:56:6:update	16	static
+../Core/Src/display.c:78:6:Task_Display_Update	8	static

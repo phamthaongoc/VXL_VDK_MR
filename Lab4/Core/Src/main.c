@@ -22,8 +22,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "scheduler.h"
+#include "fsm.h"
 #include "button.h"
-#include "led_control.h"
+#include "display.h"
 
 /* USER CODE END Includes */
 
@@ -46,11 +47,7 @@
 TIM_HandleTypeDef htim2;
 
 /* USER CODE BEGIN PV */
-void Task_LED1(void);
-void Task_LED2(void);
-void Task_LED3(void);
-void Task_LED4(void);
-void Task_OneShot(void);
+
 
 /* USER CODE END PV */
 
@@ -104,14 +101,25 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-   SCH_Init();
 
-   SCH_Add_Task(Task_LED1, 0,   50);   // 0 ms delay,   500 ms
-   SCH_Add_Task(Task_LED2, 50, 100);   // 100 ms delay, 1000 ms
-   SCH_Add_Task(Task_LED3, 100, 150);   // 200 ms delay, 1500 ms
-   SCH_Add_Task(Task_LED4, 150, 200);   // 300 ms delay, 2000 ms
+  SCH_Init();
+  FSM_Init();
+ Display_Init();
+  setNumber(5, 3);
 
-   SCH_Add_Task(getKeyInput, 0, 1);
+  enterState(AUTO_R1_G2, 1,0,0, 0,0,1);
+   //enterState(AUTO_R1_G2, 1,0,0, 0,0,1);
+   //setNumber(led1_time, led2_time);
+   //SCH_Add_Task(Task_Button, 0, 10);
+
+ //SCH_Add_Task(getKeyInput, 0, 10;
+  // SCH_Add_Task(Task_7Seg,      0, 5);
+   //SCH_Add_Task(Task_BlinkFSM,  0, 250);
+
+   //SCH_Add_Task(Task_TrafficFSM,0, 500);
+   //SCH_Add_Task(Task_ModeFSM,   0, 10);
+
+
 
   while (1)
   {
@@ -119,9 +127,6 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	          if (isButtonPressed()) {
-	              SCH_Add_Task(Task_OneShot, 0, 0);
-	          }
 
 	          SCH_Dispatch_Tasks();
   }
@@ -224,25 +229,60 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, LED1_Pin|LED2_Pin|LED3_Pin|LED4_Pin
-                          |LED_ONESHOT_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, NAV1G_Pin|NAV1Y_Pin|NAV1R_Pin|NAV2G_Pin
+                          |NAV2Y_Pin|NAV2R_Pin|EN0_Pin|EN1_Pin
+                          |EN2_Pin|EN3_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : BUTTON_Pin */
-  GPIO_InitStruct.Pin = BUTTON_Pin;
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, SEG1a_Pin|SEG1b_Pin|SEG1c_Pin|SEG1d_Pin
+                          |SEG2e_Pin|SEG2f_Pin|SEG2g_Pin|SEG1dB3_Pin
+                          |SEG1e_Pin|SEG1f_Pin|SEG1g_Pin|SEG2a_Pin
+                          |SEG2b_Pin|SEG2c_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : MODE_Pin */
+  GPIO_InitStruct.Pin = MODE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(BUTTON_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(MODE_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LED1_Pin LED2_Pin LED3_Pin LED4_Pin
-                           LED_ONESHOT_Pin */
-  GPIO_InitStruct.Pin = LED1_Pin|LED2_Pin|LED3_Pin|LED4_Pin
-                          |LED_ONESHOT_Pin;
+  /*Configure GPIO pins : NAV1G_Pin NAV1Y_Pin NAV1R_Pin NAV2G_Pin
+                           NAV2Y_Pin NAV2R_Pin EN0_Pin EN1_Pin
+                           EN2_Pin EN3_Pin */
+  GPIO_InitStruct.Pin = NAV1G_Pin|NAV1Y_Pin|NAV1R_Pin|NAV2G_Pin
+                          |NAV2Y_Pin|NAV2R_Pin|EN0_Pin|EN1_Pin
+                          |EN2_Pin|EN3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : SEG1a_Pin SEG1b_Pin SEG1c_Pin SEG1d_Pin
+                           SEG2e_Pin SEG2f_Pin SEG2g_Pin SEG1dB3_Pin
+                           SEG1e_Pin SEG1f_Pin SEG1g_Pin SEG2a_Pin
+                           SEG2b_Pin SEG2c_Pin */
+  GPIO_InitStruct.Pin = SEG1a_Pin|SEG1b_Pin|SEG1c_Pin|SEG1d_Pin
+                          |SEG2e_Pin|SEG2f_Pin|SEG2g_Pin|SEG1dB3_Pin
+                          |SEG1e_Pin|SEG1f_Pin|SEG1g_Pin|SEG2a_Pin
+                          |SEG2b_Pin|SEG2c_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : SET_Pin */
+  GPIO_InitStruct.Pin = SET_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(SET_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : INCREASE_Pin */
+  GPIO_InitStruct.Pin = INCREASE_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(INCREASE_GPIO_Port, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
@@ -254,24 +294,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	SCH_Update();     // TICK = 10 ms
 }
-void Task_LED1() {
-    LED1_Toggle();
-}
-
-void Task_LED2() {
-    LED2_Toggle();
-}
-
-void Task_LED3() {
-    LED3_Toggle();
-}
-
-void Task_LED4(void) {
-    LED4_Toggle();
-}
-
-void Task_OneShot() {
-    LED_OneShot();
+void Display_Init()
+{
+    // Add periodic task for display update
+    // Run every 50ms (5 ticks) - fast enough for smooth display
+    // This replaces the old update() calls from ISR
+    SCH_Add_Task(Task_Display_Update, 0,25);
 }
 
 /* USER CODE END 4 */

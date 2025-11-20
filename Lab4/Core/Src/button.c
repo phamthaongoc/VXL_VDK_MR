@@ -1,82 +1,71 @@
 /*
- * Logic:
- * - Nhấn xuống: toggle ngay (one toggle)
- * - Giữ 2s: toggle lần nữa (auto repeat)
- * - Giữ thêm 2s: toggle tiếp...
- * - Nhả trước 2s: không toggle thêm
+ * button.c
+ *
+ *  Created on: Nov 6, 2025
+ *      Author: Thao Ngoc
  */
+
 
 #include "button.h"
 
-#define LONG_PRESS_TIME 200   // 200 * 10ms = 2s
+#define N_BUTTONS 3
+#define LONG_PRESS_TIME 200
 
-int buffer1 = NORMAL_STATE;
-int buffer2 = NORMAL_STATE;
-int buffer3 = NORMAL_STATE;
+int button_flag[N_BUTTONS] = {0};
+int button_state[N_BUTTONS] = {NORMAL_STATE};
+int button_buffer1[N_BUTTONS];
+int button_buffer2[N_BUTTONS];
+int button_buffer3[N_BUTTONS];
+int press_timer[N_BUTTONS];
 
-int button_state = NORMAL_STATE;
-
-int press_timer = 0;
-int long_press_started = 0;
-
-int button_flag = 0;
-
-void subKeyProcess() {
-    button_flag = 1;  // toggle event
+void subKeyProcess(int index) {
+	button_flag[index] = 1;
 }
 
 int isButtonPressed() {
-    if (button_flag) {
-        button_flag = 0;
-        return 1;
-    }
-    return 0;
+	for (int i = 0; i < N_BUTTONS; i++) {
+		if (button_flag[i]) {
+			button_flag[i] = 0;
+			return i + 1;
+		}
+	}
+	return 0;
 }
 
 void getKeyInput() {
+	// MODE
+	button_buffer1[0] = button_buffer2[0];
+	button_buffer2[0] = button_buffer3[0];
+	button_buffer3[0] = HAL_GPIO_ReadPin(MODE_GPIO_Port, MODE_Pin);
 
-    // Debounce
-    buffer1 = buffer2;
-    buffer2 = buffer3;
-    buffer3 = HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin);
+	//INCREASE
+	button_buffer1[1] = button_buffer2[1];
+	button_buffer2[1] = button_buffer3[1];
+	button_buffer3[1] = HAL_GPIO_ReadPin(INCREASE_GPIO_Port, INCREASE_Pin);
 
-    if (buffer1 == buffer2 && buffer2 == buffer3) {
+	// SET
+	button_buffer1[2] = button_buffer2[2];
+	button_buffer2[2] = button_buffer3[2];
+	button_buffer3[2] = HAL_GPIO_ReadPin(SET_GPIO_Port, SET_Pin);
 
-        // ---------------------------
-        //  NHẤN XUỐNG → TOGGLE NGAY
-        // ---------------------------
-        if (button_state == NORMAL_STATE && buffer3 == PRESSED_STATE) {
-            button_state = PRESSED_STATE;
-
-            subKeyProcess();          // toggle ngay
-            press_timer = LONG_PRESS_TIME;
-            long_press_started = 1;   // đã bắt đầu long press
-        }
-
-        // ---------------------------
-        //  ĐANG GIỮ NÚT
-        // ---------------------------
-        else if (button_state == PRESSED_STATE && buffer3 == PRESSED_STATE) {
-
-            if (press_timer > 0) {
-                press_timer--;
-            }
-            else {
-                // đủ 2s → toggle tiếp
-                subKeyProcess();
-                press_timer = LONG_PRESS_TIME; // reset để auto repeat
-            }
-        }
-
-        // ---------------------------
-        //  THẢ NÚT
-        // ---------------------------
-        else if (button_state == PRESSED_STATE && buffer3 == NORMAL_STATE) {
-            button_state = NORMAL_STATE;
-
-            // Nếu chưa từng giữ đủ 2s, thì short press không toggle thêm
-            press_timer = 0;
-            long_press_started = 0;
-        }
-    }
+	for (int i = 0; i < N_BUTTONS; i++) {
+		if ((button_buffer1[i] == button_buffer2[i]) && (button_buffer2[i] == button_buffer3[i])) {
+			if (button_state[i] != button_buffer3[i]) {
+				button_state[i] = button_buffer3[i];
+				if (button_state[i] == PRESSED_STATE) {
+					subKeyProcess(i);
+					press_timer[i] = LONG_PRESS_TIME;
+				}
+			} else {
+				if (button_state[i] == PRESSED_STATE) {
+					if (press_timer[i] > 0) {
+						press_timer[i]--;
+					} else {
+						subKeyProcess(i);  // auto repeat
+						press_timer[i] = LONG_PRESS_TIME;
+					}
+				}
+			}
+		}
+	}
 }

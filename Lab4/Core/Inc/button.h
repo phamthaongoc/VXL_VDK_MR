@@ -10,16 +10,11 @@
 
 #include "main.h"
 
-#define N_BUTTONS 1
-#define LONG_PRESS_TIME 200
+#define NORMAL_STATE GPIO_PIN_SET
+#define PRESSED_STATE GPIO_PIN_RESET
 
-#define NORMAL_STATE  1
-#define PRESSED_STATE 0
-
-extern int button_flag ;
-
-void getKeyInput(void);
-int isButtonPressed(void);
-
+extern int button1_flag;
+int isButtonPressed();
+void getKeyInput();
 
 #endif /* INC_BUTTON_H_ */

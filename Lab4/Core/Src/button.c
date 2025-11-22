@@ -7,12 +7,13 @@
 
 
 #include "button.h"
+#include "fsm.h"
 
 #define N_BUTTONS 3
 #define LONG_PRESS_TIME 200
 
-int button_flag[N_BUTTONS] = {0};
-int button_state[N_BUTTONS] = {NORMAL_STATE};
+volatile int button_flag[N_BUTTONS] = {0};
+volatile int button_state[N_BUTTONS] = {NORMAL_STATE};
 int button_buffer1[N_BUTTONS];
 int button_buffer2[N_BUTTONS];
 int button_buffer3[N_BUTTONS];
@@ -60,12 +61,18 @@ void getKeyInput() {
 				if (button_state[i] == PRESSED_STATE) {
 					if (press_timer[i] > 0) {
 						press_timer[i]--;
-					} else {
-						subKeyProcess(i);  // auto repeat
-						press_timer[i] = LONG_PRESS_TIME;
+
+					//}// else {
+						//subKeyProcess(i);  // auto repeat
+						//press_timer[i] = LONG_PRESS_TIME;
 					}
 				}
 			}
 		}
 	}
+}
+
+void Task_Button_Read(void) {
+    getKeyInput();
+    check_button();
 }

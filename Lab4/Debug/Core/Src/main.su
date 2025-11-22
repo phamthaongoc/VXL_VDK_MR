@@ -1,7 +1,6 @@
 ../Core/Src/main.c:71:5:main	24	static
-../Core/Src/main.c:140:6:SystemClock_Config	72	static
-../Core/Src/main.c:177:13:MX_TIM2_Init	32	static
-../Core/Src/main.c:222:13:MX_GPIO_Init	40	static
-../Core/Src/main.c:293:6:HAL_TIM_PeriodElapsedCallback	16	static
-../Core/Src/main.c:297:6:Display_Init	8	static
-../Core/Src/main.c:311:6:Error_Handler	4	static,ignoring_inline_asm
+../Core/Src/main.c:129:6:SystemClock_Config	72	static
+../Core/Src/main.c:166:13:MX_TIM2_Init	32	static
+../Core/Src/main.c:211:13:MX_GPIO_Init	40	static
+../Core/Src/main.c:276:6:HAL_TIM_PeriodElapsedCallback	16	static
+../Core/Src/main.c:287:6:Error_Handler	4	static,ignoring_inline_asm

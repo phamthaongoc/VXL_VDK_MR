@@ -14,5 +14,6 @@ void Display_Init(void);
 void update(int);
 void setNumber(int num1, int num2);
 
+void Task_Display_Update(void);
 
 #endif /* INC_DISPLAY7SEG_H_ */

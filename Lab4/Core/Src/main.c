@@ -102,24 +102,13 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-  SCH_Init();
-  FSM_Init();
- Display_Init();
+  SCH_Add_Task(Task_Button_Read, 0, 1);
+  SCH_Add_Task(Task_Display_Update, 0, 50);
+  SCH_Add_Task(Task_FSM, 0, 100);
+  SCH_Add_Task(Task_BlinkLED, 250, 50);
+
   setNumber(5, 3);
-
   enterState(AUTO_R1_G2, 1,0,0, 0,0,1);
-   //enterState(AUTO_R1_G2, 1,0,0, 0,0,1);
-   //setNumber(led1_time, led2_time);
-   //SCH_Add_Task(Task_Button, 0, 10);
-
- //SCH_Add_Task(getKeyInput, 0, 10;
-  // SCH_Add_Task(Task_7Seg,      0, 5);
-   //SCH_Add_Task(Task_BlinkFSM,  0, 250);
-
-   //SCH_Add_Task(Task_TrafficFSM,0, 500);
-   //SCH_Add_Task(Task_ModeFSM,   0, 10);
-
-
 
   while (1)
   {
@@ -272,17 +261,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : SET_Pin */
-  GPIO_InitStruct.Pin = SET_Pin;
+  /*Configure GPIO pins : INCREASE_Pin SET_Pin */
+  GPIO_InitStruct.Pin = INCREASE_Pin|SET_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(SET_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : INCREASE_Pin */
-  GPIO_InitStruct.Pin = INCREASE_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(INCREASE_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
@@ -293,13 +276,6 @@ static void MX_GPIO_Init(void)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	SCH_Update();     // TICK = 10 ms
-}
-void Display_Init()
-{
-    // Add periodic task for display update
-    // Run every 50ms (5 ticks) - fast enough for smooth display
-    // This replaces the old update() calls from ISR
-    SCH_Add_Task(Task_Display_Update, 0,25);
 }
 
 /* USER CODE END 4 */

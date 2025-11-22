@@ -89,14 +89,14 @@ void Error_Handler(void);
 #define SEG2f_GPIO_Port GPIOB
 #define SEG2g_Pin GPIO_PIN_13
 #define SEG2g_GPIO_Port GPIOB
-#define SET_Pin GPIO_PIN_14
-#define SET_GPIO_Port GPIOB
 #define EN2_Pin GPIO_PIN_8
 #define EN2_GPIO_Port GPIOA
 #define EN3_Pin GPIO_PIN_9
 #define EN3_GPIO_Port GPIOA
 #define INCREASE_Pin GPIO_PIN_13
 #define INCREASE_GPIO_Port GPIOA
+#define SET_Pin GPIO_PIN_14
+#define SET_GPIO_Port GPIOA
 #define SEG1dB3_Pin GPIO_PIN_3
 #define SEG1dB3_GPIO_Port GPIOB
 #define SEG1e_Pin GPIO_PIN_4

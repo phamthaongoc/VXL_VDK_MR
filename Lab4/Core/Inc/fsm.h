@@ -37,6 +37,9 @@ void FSM_Init(void);                    // Initialize FSM with scheduler tasks
 void enterState(int new_state, int r1, int y1, int g1, int r2, int y2, int g2);
 void setTrafficLED(int r1, int y1, int g1, int r2, int y2, int g2);
 void check_button(void);
-void fsm_for_input_processing(void);
+void Task_FSM(void);
+void Task_BlinkLED(void);
+void Task_7Seg(void);
+
 
 #endif /* INC_FSM_H_ */

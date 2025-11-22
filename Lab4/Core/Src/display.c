@@ -21,7 +21,6 @@ const uint8_t segNumber[10] = {
 };
 
 static int led_buffer[4] = {0, 0, 0, 0};
-static int display_index = 0;
 
 void setNumber(int num1, int num2) {
     if (num1 < 0) num1 = 0;
@@ -57,29 +56,24 @@ void update(int index_led) {
     disableAllEN();
 
     switch (index_led) {
-        case 0:
-            display7seg_output(segNumber[led_buffer[1]], 1);
-            HAL_GPIO_WritePin(GPIOA, EN1_Pin, GPIO_PIN_SET);
-            display7seg_output(segNumber[led_buffer[3]], 2);
-            HAL_GPIO_WritePin(GPIOA, EN3_Pin, GPIO_PIN_SET);
-            break;
-        case 1:
-            display7seg_output(segNumber[led_buffer[0]], 1);
-            HAL_GPIO_WritePin(GPIOA, EN0_Pin, GPIO_PIN_SET);
-            display7seg_output(segNumber[led_buffer[2]], 2);
-            HAL_GPIO_WritePin(GPIOA, EN2_Pin, GPIO_PIN_SET);
-            break;
+    case 0:
+        display7seg_output(segNumber[led_buffer[1]], 1);
+        HAL_GPIO_WritePin(GPIOA, EN1_Pin, GPIO_PIN_SET);
+        display7seg_output(segNumber[led_buffer[3]], 2);
+        HAL_GPIO_WritePin(GPIOA, EN3_Pin, GPIO_PIN_SET);
+        break;
+    case 1:
+        display7seg_output(segNumber[led_buffer[0]], 1);
+        HAL_GPIO_WritePin(GPIOA, EN0_Pin, GPIO_PIN_SET);
+        display7seg_output(segNumber[led_buffer[2]], 2);
+        HAL_GPIO_WritePin(GPIOA, EN2_Pin, GPIO_PIN_SET);
+        break;
+    }
+}
+void Task_Display_Update(void) {
+    static int index_led = 0;
 
-        }
+    update(index_led);
+    index_led = 1 - index_led;
 }
 
-
-
-void Task_Display_Update(void)
-{
-    // Toggle between displaying ones and tens place
-    display_index = 1-display_index;
-
-    // Call update with current index
-    update(display_index);
-}

@@ -1,8 +1,7 @@
-../Core/Src/fsm.c:40:6:FSM_Init	1
-../Core/Src/fsm.c:62:6:setTrafficLED	1
-../Core/Src/fsm.c:79:6:check_button	12
-../Core/Src/fsm.c:131:6:enterState	1
-../Core/Src/fsm.c:144:6:Task_FSM_Normal	12
-../Core/Src/fsm.c:209:6:Task_FSM_Blink	9
-../Core/Src/fsm.c:283:6:Task_Button_Scan	1
-../Core/Src/fsm.c:299:6:fsm_for_input_processing	1
+../Core/Src/fsm.c:20:6:setTrafficLED	1
+../Core/Src/fsm.c:30:6:check_button	16
+../Core/Src/fsm.c:100:6:enterState	1
+../Core/Src/fsm.c:105:6:mode_normal	11
+../Core/Src/fsm.c:159:6:blinkLED	4
+../Core/Src/fsm.c:193:6:Task_FSM	2
+../Core/Src/fsm.c:207:6:Task_BlinkLED	5

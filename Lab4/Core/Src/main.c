@@ -223,7 +223,8 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, NAV1G_Pin|NAV1Y_Pin|NAV1R_Pin|NAV2G_Pin
                           |NAV2Y_Pin|NAV2R_Pin|EN0_Pin|EN1_Pin
-                          |EN2_Pin|EN3_Pin, GPIO_PIN_RESET);
+                          |EN2_Pin|EN3_Pin|PED1_R_Pin|PED1_G_Pin
+                          |PED2_R_Pin|PED2_G_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, SEG1a_Pin|SEG1b_Pin|SEG1c_Pin|SEG1d_Pin
@@ -239,10 +240,12 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pins : NAV1G_Pin NAV1Y_Pin NAV1R_Pin NAV2G_Pin
                            NAV2Y_Pin NAV2R_Pin EN0_Pin EN1_Pin
-                           EN2_Pin EN3_Pin */
+                           EN2_Pin EN3_Pin PED1_R_Pin PED1_G_Pin
+                           PED2_R_Pin PED2_G_Pin */
   GPIO_InitStruct.Pin = NAV1G_Pin|NAV1Y_Pin|NAV1R_Pin|NAV2G_Pin
                           |NAV2Y_Pin|NAV2R_Pin|EN0_Pin|EN1_Pin
-                          |EN2_Pin|EN3_Pin;
+                          |EN2_Pin|EN3_Pin|PED1_R_Pin|PED1_G_Pin
+                          |PED2_R_Pin|PED2_G_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -259,6 +262,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PED1_Pin PED2_Pin */
+  GPIO_InitStruct.Pin = PED1_Pin|PED2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pins : INCREASE_Pin SET_Pin */

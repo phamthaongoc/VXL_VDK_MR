@@ -9,7 +9,7 @@
 #include "button.h"
 #include "fsm.h"
 
-#define N_BUTTONS 3
+#define N_BUTTONS 5
 #define LONG_PRESS_TIME 200
 
 volatile int button_flag[N_BUTTONS] = {0};
@@ -48,6 +48,17 @@ void getKeyInput() {
 	button_buffer1[2] = button_buffer2[2];
 	button_buffer2[2] = button_buffer3[2];
 	button_buffer3[2] = HAL_GPIO_ReadPin(SET_GPIO_Port, SET_Pin);
+
+	// PED1
+	button_buffer1[3] = button_buffer2[3];
+	button_buffer2[3] = button_buffer3[3];
+	button_buffer3[3] = HAL_GPIO_ReadPin(PED1_GPIO_Port, PED1_Pin);
+
+	// PED2
+	button_buffer1[4] = button_buffer2[4];
+	button_buffer2[4] = button_buffer3[4];
+	button_buffer3[4] = HAL_GPIO_ReadPin(PED2_GPIO_Port, PED2_Pin);
+
 
 	for (int i = 0; i < N_BUTTONS; i++) {
 		if ((button_buffer1[i] == button_buffer2[i]) && (button_buffer2[i] == button_buffer3[i])) {

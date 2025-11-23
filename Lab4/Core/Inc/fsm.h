@@ -23,11 +23,15 @@
 #define AUTO_G1_R2     3
 #define AUTO_Y1_R2     4
 
+#define PED_TOTAL_TIME 10    // thời gian người đi bộ được đi
+#define PED_BLINK_TIME 3     // 5s cuối nhấp nháy
+
 // Operating Modes
 #define MODE_1         0    // Normal auto mode
 #define MODE_2         1    // Set RED time
 #define MODE_3         2    // Set YELLOW time
 #define MODE_4         3    // Set GREEN time
+#define MODE_5         4    // Pedestrian modes
 
 extern int status;
 extern int mode;
@@ -41,5 +45,7 @@ void Task_FSM(void);
 void Task_BlinkLED(void);
 void Task_7Seg(void);
 
+void setPedestrian1LED(int red, int green);
+void setPedestrian2LED(int red, int green);
 
 #endif /* INC_FSM_H_ */

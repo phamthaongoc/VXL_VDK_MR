@@ -2,5 +2,5 @@
 ../Core/Src/main.c:129:6:SystemClock_Config	3
 ../Core/Src/main.c:166:13:MX_TIM2_Init	4
 ../Core/Src/main.c:211:13:MX_GPIO_Init	1
-../Core/Src/main.c:276:6:HAL_TIM_PeriodElapsedCallback	1
-../Core/Src/main.c:287:6:Error_Handler	1
+../Core/Src/main.c:285:6:HAL_TIM_PeriodElapsedCallback	1
+../Core/Src/main.c:296:6:Error_Handler	1

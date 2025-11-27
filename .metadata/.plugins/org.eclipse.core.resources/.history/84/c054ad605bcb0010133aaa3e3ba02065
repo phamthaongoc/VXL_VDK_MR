@@ -208,7 +208,6 @@ void mode_normal() {
 				case AUTO_R1_G2:
 					enterState(AUTO_R1_G2, 1, 0, 0, 0, 0, 1);
 					road1_start_red = 1;
-					road2_start_green = 1;
 					if (led2_time <= 0) {
 
 						led2_time = yellow_time;
@@ -219,19 +218,16 @@ void mode_normal() {
 				case AUTO_R1_Y2:
 					enterState(AUTO_R1_Y2, 1, 0, 0, 0, 1, 0);
 					road1_start_red = 1;
-
 					if (led2_time <= 0) {
 						led1_time = green_time;
 						led2_time = red_time;
 						status = AUTO_G1_R2;
-						road1_start_green = 1;
 					}
 					break;
 
 				case AUTO_G1_R2:
 					enterState(AUTO_G1_R2, 0, 0, 1, 1, 0, 0);
 					road2_start_red = 1;
-					road1_start_green = 1;
 					if (led1_time <= 0) {
 						led1_time = yellow_time;
 						status = AUTO_Y1_R2;
@@ -245,7 +241,6 @@ void mode_normal() {
 						led1_time = red_time;
 						led2_time = green_time;
 						status = AUTO_R1_G2;
-						road2_start_green = 1;
 					}
 					break;
 
@@ -269,7 +264,7 @@ void mode_normal() {
 
 			    // Khi ROAD1 đỏ kết thúc → hết 1 cycle
 			    if (ped1_active && ped1_state == 2) {
-			        if (road1_start_green) {
+			        if (status == AUTO_G1_R2) {
 			            ped1_cycles++;
 			            if (ped1_cycles >= 3) {
 			                ped1_active = 0;
@@ -297,7 +292,7 @@ void mode_normal() {
 
 			    // ROAD2 red kết thúc → hết 1 cycle
 			    if (ped2_active && ped2_state == 2) {
-			        if (road2_start_green) {
+			        if (status == AUTO_R1_G2) {
 			            ped2_cycles++;
 			            if (ped2_cycles >= 3) {
 			                ped2_active = 0;
@@ -314,8 +309,6 @@ void mode_normal() {
 
 				road1_start_red = 0;
 				road2_start_red = 0;
-				road1_start_green = 0;   // 🔥 MUST RESET
-				road2_start_green = 0;   // 🔥 MUST RESET
 
 		//update(index % 2);
 

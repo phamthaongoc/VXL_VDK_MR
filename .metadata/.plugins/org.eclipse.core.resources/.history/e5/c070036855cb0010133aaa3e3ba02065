@@ -285,7 +285,7 @@ void mode_normal() {
 
 			    // ROAD2 red → PED2 green
 			    if (ped2_active && ped2_state == 1) {
-			        if (road2_start_red) {
+			        if (status == AUTO_G1_R2 || status == AUTO_Y1_R2) {
 			            ped2_state = 2;  // GREEN
 			        }
 			    }

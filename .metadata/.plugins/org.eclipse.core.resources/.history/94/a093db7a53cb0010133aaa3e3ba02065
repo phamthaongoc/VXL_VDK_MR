@@ -204,6 +204,11 @@ void mode_normal() {
 			if (led1_time > 0) led1_time--;
 			if (led2_time > 0) led2_time--;
 
+			road1_start_red = 0;
+			road2_start_red = 0;
+
+
+
 			switch (status) {
 				case AUTO_R1_G2:
 					enterState(AUTO_R1_G2, 1, 0, 0, 0, 0, 1);
@@ -248,67 +253,62 @@ void mode_normal() {
 					break;
 			}
 			// PED1 — ROAD1
-			    if (ped1_request && !ped1_active) {
-			        ped1_active = 1;
-			        ped1_cycles = 0;
-			        ped1_state = 1;   // RED ngay lập tức
-			        ped1_request = 0;
-			    }
+			if (ped1_request && !ped1_active) {
+			    ped1_active = 1;
+			    ped1_cycles = 0;
+			    ped1_state = 1;   // RED ngay lập tức
+			    ped1_request = 0;
+			}
 
-			    // Khi ROAD1 đang đỏ -> PED1 xanh
-			    if (ped1_active && ped1_state == 1) {
-			        if (road1_start_red) {
-			            ped1_state = 2;  // GREEN
+			if (ped1_active && ped1_state == 1) {
+			    if (road1_start_red) {
+			        ped1_state = 2;  // GREEN
+			    }
+			}
+
+			if (ped1_active && ped1_state == 2) {
+			    if (status == AUTO_G1_R2) {
+			        ped1_cycles++;
+			        if (ped1_cycles >= 3) {
+			            ped1_active = 0;
+			            ped1_state = 0;
+			        } else {
+			            ped1_state = 1;
 			        }
 			    }
+			}
 
-			    // Khi ROAD1 đỏ kết thúc → hết 1 cycle
-			    if (ped1_active && ped1_state == 2) {
-			        if (status == AUTO_G1_R2) {
-			            ped1_cycles++;
-			            if (ped1_cycles >= 3) {
-			                ped1_active = 0;
-			                ped1_state = 0;   // tắt
-			            } else {
-			                ped1_state = 1;   // quay lại đỏ
-			            }
+
+			// PED2 — ROAD2
+			if (ped2_request && !ped2_active) {
+			    ped2_active = 1;
+			    ped2_cycles = 0;
+			    ped2_state = 1;   // RED ngay lập tức
+			    ped2_request = 0;
+			}
+
+			if (ped2_active && ped2_state == 1) {
+			    if (road2_start_red) {
+			        ped2_state = 2;  // GREEN
+			    }
+			}
+
+			if (ped2_active && ped2_state == 2) {
+			    if (status == AUTO_R1_G2) {
+			        ped2_cycles++;
+			        if (ped2_cycles >= 3) {
+			            ped2_active = 0;
+			            ped2_state = 0;
+			        } else {
+			            ped2_state = 1;
 			        }
 			    }
+			}
 
-			    // PED2 — ROAD2
-			    if (ped2_request && !ped2_active) {
-			        ped2_active = 1;
-			        ped2_cycles = 0;
-			        ped2_state = 1;   // RED ngay lập tức
-			        ped2_request = 0;
-			    }
-
-			    // ROAD2 red → PED2 green
-			    if (ped2_active && ped2_state == 1) {
-			        if (road2_start_red) {
-			            ped2_state = 2;  // GREEN
-			        }
-			    }
-
-			    // ROAD2 red kết thúc → hết 1 cycle
-			    if (ped2_active && ped2_state == 2) {
-			        if (status == AUTO_R1_G2) {
-			            ped2_cycles++;
-			            if (ped2_cycles >= 3) {
-			                ped2_active = 0;
-			                ped2_state = 0;   // tắt
-			            } else {
-			                ped2_state = 1;   // quay lại đỏ
-			            }
-			        }
-			    }
 
 			    // ==== ÁP LED RA GPIO CHỈ 1 LẦN / TICK ====
 			    updatePedestrianLED();
 
-
-				road1_start_red = 0;
-				road2_start_red = 0;
 
 		//update(index % 2);
 

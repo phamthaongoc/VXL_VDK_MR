@@ -26,6 +26,8 @@
 #define PED_TOTAL_TIME 10    // thời gian người đi bộ được đi
 #define PED_BLINK_TIME 3     // 5s cuối nhấp nháy
 
+#define PED_GREEN_CYCLES 3
+
 // Operating Modes
 #define MODE_1         0    // Normal auto mode
 #define MODE_2         1    // Set RED time
@@ -48,4 +50,5 @@ void Task_7Seg(void);
 void setPedestrian1LED(int red, int green);
 void setPedestrian2LED(int red, int green);
 
+//void check_pedestrian_button(void);
 #endif /* INC_FSM_H_ */

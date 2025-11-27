@@ -15,6 +15,7 @@
 
 
 int isButtonPressed();
+int isPedestrianButtonPressed();
 void getKeyInput();
 
 void Task_Button_Read(void);

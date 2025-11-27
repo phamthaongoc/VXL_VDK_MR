@@ -33,6 +33,17 @@ int isButtonPressed() {
 	return 0;
 }
 
+int isPedestrianButtonPressed() {
+	// Chỉ kiểm tra PED1 (index 3) và PED2 (index 4)
+	for (int i = 3; i < N_BUTTONS; i++) {
+		if (button_flag[i]) {
+			button_flag[i] = 0;
+			return i - 2;  // Return 1 for PED1, 2 for PED2
+		}
+	}
+	return 0;
+}
+
 void getKeyInput() {
 	// MODE
 	button_buffer1[0] = button_buffer2[0];
@@ -83,7 +94,9 @@ void getKeyInput() {
 	}
 }
 
+
 void Task_Button_Read(void) {
     getKeyInput();
     check_button();
+   // check_pedestrian_button();
 }

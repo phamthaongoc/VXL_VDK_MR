@@ -1,4 +1,5 @@
 ../Core/Src/button.c:22:6:subKeyProcess	16	static
 ../Core/Src/button.c:26:5:isButtonPressed	16	static
-../Core/Src/button.c:36:6:getKeyInput	16	static
-../Core/Src/button.c:86:6:Task_Button_Read	8	static
+../Core/Src/button.c:36:5:isPedestrianButtonPressed	16	static
+../Core/Src/button.c:47:6:getKeyInput	16	static
+../Core/Src/button.c:98:6:Task_Button_Read	8	static

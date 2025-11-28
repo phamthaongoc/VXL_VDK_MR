@@ -224,7 +224,6 @@ void mode_normal() {
 						led1_time = green_time;
 						led2_time = red_time;
 						status = AUTO_G1_R2;
-						road1_start_green = 1;
 					}
 					break;
 
@@ -245,7 +244,6 @@ void mode_normal() {
 						led1_time = red_time;
 						led2_time = green_time;
 						status = AUTO_R1_G2;
-						road2_start_green = 1;
 					}
 					break;
 

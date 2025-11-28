@@ -7,6 +7,6 @@
 ../Core/Src/fsm.c:162:6:setPedestrianLED	16	static
 ../Core/Src/fsm.c:188:6:Pedestrian_Init	8	static
 ../Core/Src/fsm.c:199:6:mode_normal	24	static
-../Core/Src/fsm.c:324:6:blinkLED	24	static
-../Core/Src/fsm.c:358:6:Task_FSM	8	static
-../Core/Src/fsm.c:379:6:Task_BlinkLED	8	static
+../Core/Src/fsm.c:322:6:blinkLED	24	static
+../Core/Src/fsm.c:356:6:Task_FSM	8	static
+../Core/Src/fsm.c:377:6:Task_BlinkLED	8	static

@@ -318,3 +318,29 @@
 2025-11-28 08:29:28,668 [INFO] ThirdParty:978 - Integrity check success = true
 2025-11-28 08:29:28,668 [INFO] IntegrityCheckThread:100 - exiting critical section [integrity check]
 2025-11-28 08:29:28,668 [INFO] IntegrityCheckThread:103 - End integrity checks thread
+2025-11-28 08:33:01,657 [INFO] WebApp:194 - Connection lost
+2025-11-28 08:33:02,261 [INFO] WebApp:191 - Connection restablished
+2025-11-28 08:38:06,129 [INFO] WebApp:194 - Connection lost
+2025-11-28 08:38:21,660 [INFO] WebApp:191 - Connection restablished
+2025-11-28 08:51:28,161 [INFO] WebApp:194 - Connection lost
+2025-11-28 08:51:43,797 [INFO] WebApp:191 - Connection restablished
+2025-11-28 08:55:24,147 [INFO] WebApp:194 - Connection lost
+2025-11-28 08:55:24,411 [INFO] WebApp:191 - Connection restablished
+2025-11-28 09:06:29,500 [ERROR] AdobePublisher:162 - Exception while opening the connection: java.net.SocketTimeoutException: Read timed out
+2025-11-28 09:06:58,677 [INFO] WebApp:194 - Connection lost
+2025-11-28 09:07:07,873 [INFO] WebApp:191 - Connection restablished
+2025-11-28 09:10:36,150 [INFO] WebApp:194 - Connection lost
+2025-11-28 09:10:53,770 [INFO] WebApp:191 - Connection restablished
+2025-11-28 09:16:30,644 [INFO] WebApp:194 - Connection lost
+2025-11-28 09:16:32,635 [INFO] WebApp:191 - Connection restablished
+2025-11-28 09:18:09,651 [INFO] WebApp:194 - Connection lost
+2025-11-28 09:18:15,827 [INFO] WebApp:191 - Connection restablished
+2025-11-28 09:34:44,147 [INFO] WebApp:194 - Connection lost
+2025-11-28 09:34:44,471 [INFO] WebApp:191 - Connection restablished
+2025-11-28 09:35:02,142 [INFO] WebApp:194 - Connection lost
+2025-11-28 09:35:02,598 [INFO] WebApp:191 - Connection restablished
+2025-11-28 09:54:07,152 [INFO] WebApp:194 - Connection lost
+2025-11-28 09:54:22,920 [INFO] WebApp:191 - Connection restablished
+2025-11-28 09:54:23,127 [INFO] WebApp:194 - Connection lost
+2025-11-28 09:54:23,286 [INFO] WebApp:191 - Connection restablished
+2025-11-28 10:15:04,296 [ERROR] LogOutputStream:75 - [STDERR_REDIRECT] 

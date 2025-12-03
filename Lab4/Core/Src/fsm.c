@@ -16,6 +16,9 @@ static int cnt = 0;
 static int flag = 1;
 static int index = 1;
 static int next = 0;
+
+static int prev_status = -1;
+
 // ==== PEDESTRIAN SYSTEM ====
 
 // PED1
@@ -207,8 +210,8 @@ void mode_normal() {
 			switch (status) {
 				case AUTO_R1_G2:
 					enterState(AUTO_R1_G2, 1, 0, 0, 0, 0, 1);
-					road1_start_red = 1;
-					road2_start_green = 1;
+					//road1_start_red = 1;
+					//road2_start_green = 1;
 					if (led2_time <= 0) {
 
 						led2_time = yellow_time;
@@ -218,7 +221,7 @@ void mode_normal() {
 
 				case AUTO_R1_Y2:
 					enterState(AUTO_R1_Y2, 1, 0, 0, 0, 1, 0);
-					road1_start_red = 1;
+					//road1_start_red = 1;
 
 					if (led2_time <= 0) {
 						led1_time = green_time;
@@ -229,8 +232,8 @@ void mode_normal() {
 
 				case AUTO_G1_R2:
 					enterState(AUTO_G1_R2, 0, 0, 1, 1, 0, 0);
-					road2_start_red = 1;
-					road1_start_green = 1;
+					//road2_start_red = 1;
+					//road1_start_green = 1;
 					if (led1_time <= 0) {
 						led1_time = yellow_time;
 						status = AUTO_Y1_R2;
@@ -239,7 +242,7 @@ void mode_normal() {
 
 				case AUTO_Y1_R2:
 					enterState(AUTO_Y1_R2, 0, 1, 0, 1, 0, 0);
-					road2_start_red = 1;
+					//road2_start_red = 1;
 					if (led1_time <= 0) {
 						led1_time = red_time;
 						led2_time = green_time;
@@ -250,6 +253,14 @@ void mode_normal() {
 				default:
 					break;
 			}
+
+			// chỉ set flag 1 lần ở đây
+			road1_start_red   = (status == AUTO_R1_G2 && prev_status != AUTO_R1_G2);
+			road1_start_green = (status == AUTO_G1_R2 && prev_status != AUTO_G1_R2);
+
+			road2_start_red   = (status == AUTO_G1_R2 && prev_status != AUTO_G1_R2);
+			road2_start_green = (status == AUTO_R1_G2 && prev_status != AUTO_R1_G2);
+
 			// PED1 — ROAD1
 			    if (ped1_request && !ped1_active) {
 			        ped1_active = 1;
@@ -309,11 +320,13 @@ void mode_normal() {
 			    // ==== ÁP LED RA GPIO CHỈ 1 LẦN / TICK ====
 			    updatePedestrianLED();
 
+			    prev_status = status;
 
 				road1_start_red = 0;
 				road2_start_red = 0;
 				road1_start_green = 0;   // 🔥 MUST RESET
 				road2_start_green = 0;   // 🔥 MUST RESET
+
 
 		//update(index % 2);
 

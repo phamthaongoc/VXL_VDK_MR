@@ -24,8 +24,7 @@
 #include "scheduler.h"
 #include "fsm.h"
 #include "button.h"
-#include "display.h"
-
+#include "lcd_parallel.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,7 +47,6 @@ TIM_HandleTypeDef htim2;
 
 /* USER CODE BEGIN PV */
 
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -70,9 +68,8 @@ static void MX_TIM2_Init(void);
   */
 int main(void)
 {
-
   /* USER CODE BEGIN 1 */
-
+  /* KHÔNG làm gì với LCD/GPIO ở đây – lúc này HAL/GPIO chưa init */
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -95,29 +92,41 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
+
+  // Bắt đầu timer interrupt mỗi 10ms
   HAL_TIM_Base_Start_IT(&htim2);
+
+  // Init scheduler
+  SCH_Init();
+
+  // Init LCD sau khi GPIO đã được cấu hình
+  LCD_Init();
+  LCD_Clear();
+  LCD_Send_String("TRAFFIC SYSTEM");
+  HAL_Delay(700);
+  LCD_Clear();
+
+  // Init hệ người đi bộ
   Pedestrian_Init();
+
+  // Đăng ký task
+  SCH_Add_Task(Task_Button_Read, 0, 1);      // đọc nút mỗi 10ms
+  SCH_Add_Task(Task_FSM,        0, 100);     // FSM mỗi 100ms
+  SCH_Add_Task(Task_BlinkLED,   250, 50);    // blink theo mode
+
+  // Trạng thái ban đầu: R1, G2
+  enterState(AUTO_R1_G2, 1,0,0, 0,0,1);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-
-  SCH_Add_Task(Task_Button_Read, 0, 1);
-  SCH_Add_Task(Task_Display_Update, 0, 50);
-  SCH_Add_Task(Task_FSM, 0, 100);
-  SCH_Add_Task(Task_BlinkLED, 250, 50);
-
-  setNumber(5, 3);
-  enterState(AUTO_R1_G2, 1,0,0, 0,0,1);
-
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-
-
-	          SCH_Dispatch_Tasks();
+    SCH_Dispatch_Tasks();
   }
   /* USER CODE END 3 */
 }
@@ -222,15 +231,12 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, NAV1G_Pin|NAV1Y_Pin|NAV1R_Pin|NAV2G_Pin
-                          |NAV2Y_Pin|NAV2R_Pin|EN0_Pin|EN1_Pin
-                          |EN2_Pin|EN3_Pin|PED1_R_Pin|PED1_G_Pin
+                          |NAV2Y_Pin|NAV2R_Pin|PED1_R_Pin|PED1_G_Pin
                           |PED2_R_Pin|PED2_G_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, SEG1a_Pin|SEG1b_Pin|SEG1c_Pin|SEG1d_Pin
-                          |SEG2e_Pin|SEG2f_Pin|SEG2g_Pin|SEG1dB3_Pin
-                          |SEG1e_Pin|SEG1f_Pin|SEG1g_Pin|SEG2a_Pin
-                          |SEG2b_Pin|SEG2c_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, LCD_RS_Pin|LCD_E_Pin|LCD_D4_Pin|LCD_D5_Pin
+                          |LCD_D6_Pin|LCD_D7_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : MODE_Pin */
   GPIO_InitStruct.Pin = MODE_Pin;
@@ -239,26 +245,20 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(MODE_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : NAV1G_Pin NAV1Y_Pin NAV1R_Pin NAV2G_Pin
-                           NAV2Y_Pin NAV2R_Pin EN0_Pin EN1_Pin
-                           EN2_Pin EN3_Pin PED1_R_Pin PED1_G_Pin
+                           NAV2Y_Pin NAV2R_Pin PED1_R_Pin PED1_G_Pin
                            PED2_R_Pin PED2_G_Pin */
   GPIO_InitStruct.Pin = NAV1G_Pin|NAV1Y_Pin|NAV1R_Pin|NAV2G_Pin
-                          |NAV2Y_Pin|NAV2R_Pin|EN0_Pin|EN1_Pin
-                          |EN2_Pin|EN3_Pin|PED1_R_Pin|PED1_G_Pin
+                          |NAV2Y_Pin|NAV2R_Pin|PED1_R_Pin|PED1_G_Pin
                           |PED2_R_Pin|PED2_G_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : SEG1a_Pin SEG1b_Pin SEG1c_Pin SEG1d_Pin
-                           SEG2e_Pin SEG2f_Pin SEG2g_Pin SEG1dB3_Pin
-                           SEG1e_Pin SEG1f_Pin SEG1g_Pin SEG2a_Pin
-                           SEG2b_Pin SEG2c_Pin */
-  GPIO_InitStruct.Pin = SEG1a_Pin|SEG1b_Pin|SEG1c_Pin|SEG1d_Pin
-                          |SEG2e_Pin|SEG2f_Pin|SEG2g_Pin|SEG1dB3_Pin
-                          |SEG1e_Pin|SEG1f_Pin|SEG1g_Pin|SEG2a_Pin
-                          |SEG2b_Pin|SEG2c_Pin;
+  /*Configure GPIO pins : LCD_RS_Pin LCD_E_Pin LCD_D4_Pin LCD_D5_Pin
+                           LCD_D6_Pin LCD_D7_Pin */
+  GPIO_InitStruct.Pin = LCD_RS_Pin|LCD_E_Pin|LCD_D4_Pin|LCD_D5_Pin
+                          |LCD_D6_Pin|LCD_D7_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -284,9 +284,10 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	SCH_Update();     // TICK = 10 ms
+  // Nếu sau này dùng nhiều timer thì check:
+  // if (htim->Instance == TIM2) { ... }
+  SCH_Update();     // TICK = 10 ms
 }
-
 /* USER CODE END 4 */
 
 /**

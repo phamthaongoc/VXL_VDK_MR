@@ -1,401 +1,409 @@
-
 #include "fsm.h"
+#include "lcd_parallel.h"
+#include "button.h"   // <-- THÊM VÀO ĐỂ CÓ isButtonPressed()
+#include <stdio.h>
+#include <string.h>
+
+// ================== GLOBAL STATE ==================
 
 int status = AUTO_R1_G2;
-int mode = MODE_1;
+int mode   = MODE_1;
 
+// Thời gian đếm của mỗi hướng
 static int led1_time = 5;
 static int led2_time = 3;
+
+// Thời gian cấu hình
+static int red_time    = 5;
+static int yellow_time = 2;
+static int green_time  = 3;
+
+// Blink cho MODE_2/3/4
 static int blink_state = 0;
 
-static int red_time = 5;
-static int yellow_time = 2;
-static int green_time = 3;
-
-static int cnt = 0;
-static int flag = 1;
-static int index = 1;
+// Biến config
+static int cnt  = 0;
 static int next = 0;
+static int flag = 0;
 
+// Để xử lý cạnh khi đổi state
+static int next_status = AUTO_R1_G2;
 static int prev_status = -1;
 
 // ==== PEDESTRIAN SYSTEM ====
-
 // PED1
 int ped1_request = 0;
-int ped1_active = 0;
-int ped1_cycles = 0;     // Đếm 3 chu kỳ
-int ped1_state = 0;      // 0: off, 1: red, 2: green
+int ped1_active  = 0;
+int ped1_cycles  = 0;   // 3 chu kỳ
+int ped1_state   = 0;   // 0: off, 1: red, 2: green
 
 // PED2
 int ped2_request = 0;
-int ped2_active = 0;
-int ped2_cycles = 0;
-int ped2_state = 0;
+int ped2_active  = 0;
+int ped2_cycles  = 0;
+int ped2_state   = 0;   // 0: off, 1: red, 2: green
 
-
-// ROAD1
-int road1_start_red = 0;
+// ROAD transition flags
+int road1_start_red   = 0;
 int road1_start_green = 0;
-
-// ROAD2
-int road2_start_red = 0;
+int road2_start_red   = 0;
 int road2_start_green = 0;
 
+/* Cache nội dung LCD để tránh ghi lại → không bị nháy */
+static char lcd_line0[17] = "";
+static char lcd_line1[17] = "";
 
+// ============================================================
+// LCD UTIL
+// ============================================================
+
+void lcd_update_line(int row, const char* text) {
+    char* buf = (row == 0) ? lcd_line0 : lcd_line1;
+    if (strcmp(buf, text) == 0) return;  // Không đổi → khỏi ghi
+
+    strcpy(buf, text);
+    LCD_GotoXY(row, 0);
+    LCD_Send_String(text);
+}
+
+// Hiển thị AUTO MODE + Pedestrian
+void lcd_show_auto_mode(int t1, int t2) {
+    char line0[17];
+    char line1[17];
+
+    char p1c = (ped1_state == 0) ? 'O' : (ped1_state == 1 ? 'R' : 'G');
+    char p2c = (ped2_state == 0) ? 'O' : (ped2_state == 1 ? 'R' : 'G');
+
+    // Dòng 0: chế độ + trạng thái người đi bộ
+    // AUTO P1:G P2:R
+    snprintf(line0, sizeof(line0), "AUTO P1:%c P2:%c", p1c, p2c);
+
+    // Dòng 1: thời gian 2 hướng
+    // R1:xx  R2:yy
+    snprintf(line1, sizeof(line1), "R1:%02d  R2:%02d ", t1, t2);
+
+    lcd_update_line(0, line0);
+    lcd_update_line(1, line1);
+}
+
+// Hiển thị CONFIG MODE
+void lcd_show_config(int mode, int inc_value) {
+    char line0[17];
+    char line1[17];
+
+    int set_value =
+        (mode == MODE_2) ? red_time :
+        (mode == MODE_3) ? yellow_time :
+                           green_time;
+
+    if (mode == MODE_2)       snprintf(line0, sizeof(line0), "CONFIG: RED    ");
+    else if (mode == MODE_3)  snprintf(line0, sizeof(line0), "CONFIG:YELLOW  ");
+    else if (mode == MODE_4)  snprintf(line0, sizeof(line0), "CONFIG: GREEN  ");
+
+    snprintf(line1, sizeof(line1), "INC:%02d SET:%02d ", inc_value, set_value);
+
+    lcd_update_line(0, line0);
+    lcd_update_line(1, line1);
+}
+
+// ============================================================
+// LED GIAO THÔNG & PEDESTRIAN
+// ============================================================
 
 void setTrafficLED(int r1, int y1, int g1, int r2, int y2, int g2) {
-	HAL_GPIO_WritePin(GPIOA, NAV1R_Pin, r1 ? GPIO_PIN_RESET : GPIO_PIN_SET);
-	HAL_GPIO_WritePin(GPIOA, NAV1Y_Pin, y1 ? GPIO_PIN_RESET : GPIO_PIN_SET);
-	HAL_GPIO_WritePin(GPIOA, NAV1G_Pin, g1 ? GPIO_PIN_RESET : GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOA, NAV1R_Pin, r1 ? GPIO_PIN_RESET : GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOA, NAV1Y_Pin, y1 ? GPIO_PIN_RESET : GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOA, NAV1G_Pin, g1 ? GPIO_PIN_RESET : GPIO_PIN_SET);
 
-	HAL_GPIO_WritePin(GPIOA, NAV2R_Pin, r2 ? GPIO_PIN_RESET : GPIO_PIN_SET);
-	HAL_GPIO_WritePin(GPIOA, NAV2Y_Pin, y2 ? GPIO_PIN_RESET : GPIO_PIN_SET);
-	HAL_GPIO_WritePin(GPIOA, NAV2G_Pin, g2 ? GPIO_PIN_RESET : GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOA, NAV2R_Pin, r2 ? GPIO_PIN_RESET : GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOA, NAV2Y_Pin, y2 ? GPIO_PIN_RESET : GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOA, NAV2G_Pin, g2 ? GPIO_PIN_RESET : GPIO_PIN_SET);
 }
 
-void check_button() {
-    int button_event = isButtonPressed();
-    if (button_event == 0) {
-            return;
-        }
-    switch (button_event) {
-        case 1: // MODE
-            next = (next + 1) % 4;
-            mode = MODE_1 + next;
-
-            cnt = 0;
-
-            // Chỉ bật flag nếu là mode chỉnh
-            if (mode == MODE_2 || mode == MODE_3 || mode == MODE_4)
-                flag = 1;
-            else
-                flag = 0;
-
-            break;
-
-        case 2: // INCREASE
-            if (flag) cnt++;
-            if (cnt > 99) cnt = 0;
-            break;
-
-        case 3: // SET
-            switch (mode) {
-                case MODE_2:
-                    red_time = cnt;
-                    mode = MODE_3;
-                    next = mode - MODE_1;   // <--- FIX
-                    cnt = 0;
-                    break;
-
-                case MODE_3:
-                    yellow_time = cnt;
-                    mode = MODE_4;
-                    next = mode - MODE_1;   // <--- FIX
-
-                    cnt = 0;
-                    break;
-
-                case MODE_4:
-                    green_time = cnt;
-
-                    // check điều kiện hợp lệ
-                    if (red_time != yellow_time + green_time) {
-                        red_time = 5;
-                        yellow_time = 2;
-                        green_time = 3;
-                    }
-
-                    // quay về MODE_1
-                    mode = MODE_1;
-                    next = 0;
-                    cnt = 0;
-                    flag = 0;
-                    break;
-
-                default:
-                    break;
-            }
-            break;
-            case 4: ped1_request = 1; break;
-            case 5: ped2_request = 1; break;
-
-
-        default:
-            break;
-    }
+void enterState(int new_state, int r1, int y1, int g1, int r2, int y2, int g2) {
+    status = new_state;
+    setTrafficLED(r1, y1, g1, r2, y2, g2);
 }
+
+// LED người đi bộ raw
 void setPed1LED(int red, int green) {
-    HAL_GPIO_WritePin(GPIOA, PED1_R_Pin, red ? GPIO_PIN_RESET : GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOA, PED1_R_Pin, red   ? GPIO_PIN_RESET : GPIO_PIN_SET);
     HAL_GPIO_WritePin(GPIOA, PED1_G_Pin, green ? GPIO_PIN_RESET : GPIO_PIN_SET);
 }
 
 void setPed2LED(int red, int green) {
-    HAL_GPIO_WritePin(GPIOA, PED2_R_Pin, red ? GPIO_PIN_RESET : GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOA, PED2_R_Pin, red   ? GPIO_PIN_RESET : GPIO_PIN_SET);
     HAL_GPIO_WritePin(GPIOA, PED2_G_Pin, green ? GPIO_PIN_RESET : GPIO_PIN_SET);
 }
 
+// Áp state ped1_state / ped2_state ra GPIO
 void updatePedestrianLED(void) {
-    // Nếu không còn active và không có request thì ép tắt state
-    if (!ped1_active && !ped1_request) {
-        ped1_state = 0;
-    }
-    if (!ped2_active && !ped2_request) {
-        ped2_state = 0;
-    }
+    // Nếu không còn active và không còn request → off
+    if (!ped1_active && !ped1_request) ped1_state = 0;
+    if (!ped2_active && !ped2_request) ped2_state = 0;
 
     // PED1
-    if (ped1_state == 0)      setPed1LED(0, 0); // off
-    else if (ped1_state == 1) setPed1LED(1, 0); // red
-    else if (ped1_state == 2) setPed1LED(0, 1); // green
+    if      (ped1_state == 0) setPed1LED(0, 0);  // off
+    else if (ped1_state == 1) setPed1LED(1, 0);  // red
+    else if (ped1_state == 2) setPed1LED(0, 1);  // green
 
     // PED2
-    if (ped2_state == 0)      setPed2LED(0, 0);
+    if      (ped2_state == 0) setPed2LED(0, 0);
     else if (ped2_state == 1) setPed2LED(1, 0);
     else if (ped2_state == 2) setPed2LED(0, 1);
 }
 
-void enterState(int new_state, int r1, int y1, int g1, int r2, int y2, int g2) {
-	status = new_state;
-	setTrafficLED(r1, y1, g1, r2, y2, g2);
-
-
-}
-
-void setPedestrianLED(int ped1_color, int ped2_color) {
-	// ped1_color: 0=off, 1=red, 2=green
-	// ped2_color: 0=off, 1=red, 2=green
-
-	if (ped1_color == 0) {
-		HAL_GPIO_WritePin(GPIOA, PED1_R_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(GPIOA, PED1_G_Pin, GPIO_PIN_SET);
-	} else if (ped1_color == 1) {
-		HAL_GPIO_WritePin(GPIOA, PED1_R_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(GPIOA, PED1_G_Pin, GPIO_PIN_SET);
-	} else if (ped1_color == 2) {
-		HAL_GPIO_WritePin(GPIOA, PED1_R_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(GPIOA, PED1_G_Pin, GPIO_PIN_RESET);
-	}
-
-	if (ped2_color == 0) {
-		HAL_GPIO_WritePin(GPIOA, PED2_R_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(GPIOA, PED2_G_Pin, GPIO_PIN_SET);
-	} else if (ped2_color == 1) {
-		HAL_GPIO_WritePin(GPIOA, PED2_R_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(GPIOA, PED2_G_Pin, GPIO_PIN_SET);
-	} else if (ped2_color == 2) {
-		HAL_GPIO_WritePin(GPIOA, PED2_R_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(GPIOA, PED2_G_Pin, GPIO_PIN_RESET);
-	}
-}
 void Pedestrian_Init(void) {
     ped1_request = ped2_request = 0;
     ped1_active  = ped2_active  = 0;
     ped1_cycles  = ped2_cycles  = 0;
     ped1_state   = ped2_state   = 0;
 
-    // TẮT HẲN LED PED
     setPed1LED(0, 0);
     setPed2LED(0, 0);
 }
 
+// ============================================================
+// BUTTON HANDLER (MODE / INCREASE / SET / PED BUTTONS)
+// ============================================================
+
+void check_button() {
+    int button_event = isButtonPressed();
+    if (button_event == 0) return;
+
+    switch (button_event) {
+    case 1:  // MODE
+        next = (next + 1) % 4;
+        mode = MODE_1 + next;
+        cnt  = 0;
+
+        flag = (mode != MODE_1);  // MODE_1: auto, còn lại config
+
+        LCD_Clear();
+        lcd_line0[0] = 0;
+        lcd_line1[0] = 0;
+
+        if (mode != MODE_1) {
+            // Tắt đèn giao thông khi vào CONFIG cho dễ nhìn
+            setTrafficLED(0,0,0, 0,0,0);
+            lcd_show_config(mode, cnt);
+        } else {
+            // Về AUTO → hiển thị lại auto mode
+            lcd_show_auto_mode(led1_time, led2_time);
+        }
+        break;
+
+    case 2:  // INCREASE
+        if (flag) cnt++;
+        if (cnt > 99) cnt = 0;
+
+        if (mode != MODE_1)
+            lcd_show_config(mode, cnt);
+        break;
+
+    case 3: // SET (chỉ dùng trong CONFIG)
+        switch (mode) {
+        case MODE_2:
+            red_time = cnt;
+            break;
+
+        case MODE_3:
+            yellow_time = cnt;
+            break;
+
+        case MODE_4:
+            if (red_time == yellow_time + cnt)  // hợp lệ mới set
+                green_time = cnt;
+            break;
+        }
+        cnt = 0;
+        lcd_show_config(mode, cnt);
+        break;
+
+    // ====== PED BUTTONS ======
+    case 4: // Nút xin đường PED1
+        ped1_request = 1;
+        break;
+
+    case 5: // Nút xin đường PED2
+        ped2_request = 1;
+        break;
+
+    default:
+        break;
+    }
+}
+
+// ============================================================
+// AUTO MODE + PEDESTRIAN FSM
+// ============================================================
+
 void mode_normal() {
-		//index++;
-
-
-			setNumber(led1_time, led2_time);
-			if (led1_time > 0) led1_time--;
-			if (led2_time > 0) led2_time--;
-
-			switch (status) {
-				case AUTO_R1_G2:
-					enterState(AUTO_R1_G2, 1, 0, 0, 0, 0, 1);
-					//road1_start_red = 1;
-					//road2_start_green = 1;
-					if (led2_time <= 0) {
-
-						led2_time = yellow_time;
-						status = AUTO_R1_Y2;
-					}
-					break;
-
-				case AUTO_R1_Y2:
-					enterState(AUTO_R1_Y2, 1, 0, 0, 0, 1, 0);
-					//road1_start_red = 1;
-
-					if (led2_time <= 0) {
-						led1_time = green_time;
-						led2_time = red_time;
-						status = AUTO_G1_R2;
-					}
-					break;
-
-				case AUTO_G1_R2:
-					enterState(AUTO_G1_R2, 0, 0, 1, 1, 0, 0);
-					//road2_start_red = 1;
-					//road1_start_green = 1;
-					if (led1_time <= 0) {
-						led1_time = yellow_time;
-						status = AUTO_Y1_R2;
-					}
-					break;
-
-				case AUTO_Y1_R2:
-					enterState(AUTO_Y1_R2, 0, 1, 0, 1, 0, 0);
-					//road2_start_red = 1;
-					if (led1_time <= 0) {
-						led1_time = red_time;
-						led2_time = green_time;
-						status = AUTO_R1_G2;
-					}
-					break;
-
-				default:
-					break;
-			}
-
-			// chỉ set flag 1 lần ở đây
-			road1_start_red   = (status == AUTO_R1_G2 && prev_status != AUTO_R1_G2);
-			road1_start_green = (status == AUTO_G1_R2 && prev_status != AUTO_G1_R2);
-
-			road2_start_red   = (status == AUTO_G1_R2 && prev_status != AUTO_G1_R2);
-			road2_start_green = (status == AUTO_R1_G2 && prev_status != AUTO_R1_G2);
-
-			// PED1 — ROAD1
-			    if (ped1_request && !ped1_active) {
-			        ped1_active = 1;
-			        ped1_cycles = 0;
-			        ped1_state = 1;   // RED ngay lập tức
-			        ped1_request = 0;
-			    }
-
-			    // Khi ROAD1 đang đỏ -> PED1 xanh
-			    if (ped1_active && ped1_state == 1) {
-			        if (road1_start_red) {
-			            ped1_state = 2;  // GREEN
-			        }
-			    }
-
-			    // Khi ROAD1 đỏ kết thúc → hết 1 cycle
-			    if (ped1_active && ped1_state == 2) {
-			        if (road1_start_green) {
-			            ped1_cycles++;
-			            if (ped1_cycles >= 3) {
-			                ped1_active = 0;
-			                ped1_state = 0;   // tắt
-			            } else {
-			                ped1_state = 1;   // quay lại đỏ
-			            }
-			        }
-			    }
-
-			    // PED2 — ROAD2
-			    if (ped2_request && !ped2_active) {
-			        ped2_active = 1;
-			        ped2_cycles = 0;
-			        ped2_state = 1;   // RED ngay lập tức
-			        ped2_request = 0;
-			    }
-
-			    // ROAD2 red → PED2 green
-			    if (ped2_active && ped2_state == 1) {
-			        if (road2_start_red) {
-			            ped2_state = 2;  // GREEN
-			        }
-			    }
-
-			    // ROAD2 red kết thúc → hết 1 cycle
-			    if (ped2_active && ped2_state == 2) {
-			        if (road2_start_green) {
-			            ped2_cycles++;
-			            if (ped2_cycles >= 3) {
-			                ped2_active = 0;
-			                ped2_state = 0;   // tắt
-			            } else {
-			                ped2_state = 1;   // quay lại đỏ
-			            }
-			        }
-			    }
-
-			    // ==== ÁP LED RA GPIO CHỈ 1 LẦN / TICK ====
-			    updatePedestrianLED();
-
-			    prev_status = status;
-
-				road1_start_red = 0;
-				road2_start_red = 0;
-				road1_start_green = 0;   // 🔥 MUST RESET
-				road2_start_green = 0;   // 🔥 MUST RESET
-
-
-		//update(index % 2);
-
-}
-
-void blinkLED(int red, int yellow, int green) {
-		index = (index + 1) % 2;
-		setNumber(mode + 1, cnt);
-
-		blink_state = !blink_state;
-
-		if (red) {
-			HAL_GPIO_WritePin(GPIOA, NAV1R_Pin, blink_state ? GPIO_PIN_RESET : GPIO_PIN_SET);
-			HAL_GPIO_WritePin(GPIOA, NAV2R_Pin, blink_state ? GPIO_PIN_RESET : GPIO_PIN_SET);
-		} else {
-			HAL_GPIO_WritePin(GPIOA, NAV1R_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(GPIOA, NAV2R_Pin, GPIO_PIN_SET);
-		}
-
-		if (yellow) {
-			HAL_GPIO_WritePin(GPIOA, NAV1Y_Pin, blink_state ? GPIO_PIN_RESET : GPIO_PIN_SET);
-			HAL_GPIO_WritePin(GPIOA, NAV2Y_Pin, blink_state ? GPIO_PIN_RESET : GPIO_PIN_SET);
-		} else {
-			HAL_GPIO_WritePin(GPIOA, NAV1Y_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(GPIOA, NAV2Y_Pin, GPIO_PIN_SET);
-		}
-
-		if (green) {
-			HAL_GPIO_WritePin(GPIOA, NAV1G_Pin, blink_state ? GPIO_PIN_RESET : GPIO_PIN_SET);
-			HAL_GPIO_WritePin(GPIOA, NAV2G_Pin, blink_state ? GPIO_PIN_RESET : GPIO_PIN_SET);
-		} else {
-			HAL_GPIO_WritePin(GPIOA, NAV1G_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(GPIOA, NAV2G_Pin, GPIO_PIN_SET);
-		}
-
-		//update(index);
-
-}
-
-void Task_FSM() {
-	// check_button();
-    switch (mode) {
-        case MODE_1:
-            mode_normal();
-           // pedestrian_fsm_road1();
-           // pedestrian_fsm_road2();
-
-            break;
-       // case MODE_5:
-             //   pedestrian_fsm_road1();
-              //  pedestrian_fsm_road2();
-            //    break;
-         default:
-            // mode 2/3/4 đã do Task_BlinkLED xử lý
-            break;
+    // 1) Cập nhật status từ tick trước bằng next_status
+    if (status != next_status) {
+        prev_status = status;
+        status      = next_status;
+    } else {
+        prev_status = status;
     }
 
+    // 5) Cập nhật LCD (sau khi đã xử lý pedestrian & timer)
+        lcd_show_auto_mode(led1_time, led2_time);
 
+    // 2) Giảm timer & chuẩn bị next_status
+    if (led1_time > 0) led1_time--;
+    if (led2_time > 0) led2_time--;
+
+    switch (status) {
+    case AUTO_R1_G2:
+        enterState(AUTO_R1_G2, 1,0,0, 0,0,1);
+        if (led2_time <= 0) {
+            led2_time   = yellow_time;
+            next_status = AUTO_R1_Y2;
+        }
+        break;
+
+    case AUTO_R1_Y2:
+        enterState(AUTO_R1_Y2, 1,0,0, 0,1,0);
+        if (led2_time <= 0) {
+            led1_time   = green_time;
+            led2_time   = red_time;
+            next_status = AUTO_G1_R2;
+        }
+        break;
+
+    case AUTO_G1_R2:
+        enterState(AUTO_G1_R2, 0,0,1, 1,0,0);
+        if (led1_time <= 0) {
+            led1_time   = yellow_time;
+            next_status = AUTO_Y1_R2;
+        }
+        break;
+
+    case AUTO_Y1_R2:
+        enterState(AUTO_Y1_R2, 0,1,0, 1,0,0);
+        if (led1_time <= 0) {
+            led1_time   = red_time;
+            led2_time   = green_time;
+            next_status = AUTO_R1_G2;
+        }
+        break;
+
+    default:
+        break;
+    }
+
+    // 3) Set flag chuyển pha (chỉ true đúng 1 tick khi bắt đầu RED / GREEN)
+    road1_start_red   = (status == AUTO_R1_G2 && prev_status != AUTO_R1_G2);
+    road1_start_green = (status == AUTO_G1_R2 && prev_status != AUTO_G1_R2);
+    road2_start_red   = (status == AUTO_G1_R2 && prev_status != AUTO_G1_R2);
+    road2_start_green = (status == AUTO_R1_G2 && prev_status != AUTO_R1_G2);
+
+    // ================== PED1 – ROAD1 ==================
+    if (ped1_request && !ped1_active) {
+        ped1_active  = 1;
+        ped1_cycles  = 0;
+        ped1_state   = 1;   // bật ĐỎ ngay khi nhấn
+        ped1_request = 0;
+    }
+
+    if (ped1_active && ped1_state == 1) {
+        if (road1_start_red) {
+            ped1_state = 2; // GREEN
+        }
+    }
+
+    if (ped1_active && ped1_state == 2) {
+        if (road1_start_green) {
+            ped1_cycles++;
+            if (ped1_cycles >= 3) {
+                ped1_active = 0;
+                ped1_state  = 0;
+            } else {
+                ped1_state = 1;
+            }
+        }
+    }
+
+    // ================== PED2 – ROAD2 ==================
+    if (ped2_request && !ped2_active) {
+        ped2_active  = 1;
+        ped2_cycles  = 0;
+        ped2_state   = 1;   // bật ĐỎ ngay khi nhấn
+        ped2_request = 0;
+    }
+
+    if (ped2_active && ped2_state == 1) {
+        if (road2_start_red) {
+            ped2_state = 2; // GREEN
+        }
+    }
+
+    if (ped2_active && ped2_state == 2) {
+        if (road2_start_green) {
+            ped2_cycles++;
+            if (ped2_cycles >= 3) {
+                ped2_active = 0;
+                ped2_state  = 0;
+            } else {
+                ped2_state = 1;  // quay lại đỏ chờ chu kỳ đỏ mới
+            }
+        }
+    }
+
+    // 4) Cập nhật LED pedestrian thực tế
+    updatePedestrianLED();
+
+
+
+    // 6) Reset flags (chỉ dùng 1 tick)
+    road1_start_red   = 0;
+    road1_start_green = 0;
+    road2_start_red   = 0;
+    road2_start_green = 0;
+}
+
+// ============================================================
+// BLINK MODE (CONFIG)
+// ============================================================
+
+void blinkLED(int red, int yellow, int green) {
+    blink_state = !blink_state;
+
+    if (red) {
+        HAL_GPIO_WritePin(GPIOA, NAV1R_Pin, blink_state ? GPIO_PIN_RESET : GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOA, NAV2R_Pin, blink_state ? GPIO_PIN_RESET : GPIO_PIN_SET);
+    }
+    if (yellow) {
+        HAL_GPIO_WritePin(GPIOA, NAV1Y_Pin, blink_state ? GPIO_PIN_RESET : GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOA, NAV2Y_Pin, blink_state ? GPIO_PIN_RESET : GPIO_PIN_SET);
+    }
+    if (green) {
+        HAL_GPIO_WritePin(GPIOA, NAV1G_Pin, blink_state ? GPIO_PIN_RESET : GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOA, NAV2G_Pin, blink_state ? GPIO_PIN_RESET : GPIO_PIN_SET);
+    }
+
+    // LCD vẫn hiển thị config
+    lcd_show_config(mode, cnt);
+}
+
+// ============================================================
+// TASKS
+// ============================================================
+
+void Task_FSM() {
+    check_button();
+
+    if (mode == MODE_1) {
+        mode_normal();
+    }
 }
 
 void Task_BlinkLED() {
     switch (mode) {
-        case MODE_2: blinkLED(1, 0, 0); //check_button();
-        break;
-        case MODE_3: blinkLED(0, 1, 0); // check_button();
-        break;
-        case MODE_4: blinkLED(0, 0, 1); //check_button();
-        break;
-        default: break;
+    case MODE_2: blinkLED(1,0,0); break;
+    case MODE_3: blinkLED(0,1,0); break;
+    case MODE_4: blinkLED(0,0,1); break;
+    default: break;
     }
 }
-

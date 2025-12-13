@@ -1,54 +1,33 @@
-/*
- * fsm.h
- *
- *  Created on: Nov 20, 2025
- *      Author: Thao Ngoc
- */
-/*
- * fsm.h - Traffic Light FSM Header
- * Updated to use Scheduler instead of Timer
- */
-
 #ifndef INC_FSM_H_
 #define INC_FSM_H_
 
-#include <display.h>
-#include "button.h"
 #include "main.h"
 
-// FSM States
-#define INIT           0
-#define AUTO_R1_G2     1
-#define AUTO_R1_Y2     2
-#define AUTO_G1_R2     3
-#define AUTO_Y1_R2     4
+// ================== MODE DEFINITIONS ===================
+#define MODE_1 1   // Auto
+#define MODE_2 2   // Config RED
+#define MODE_3 3   // Config YELLOW
+#define MODE_4 4   // Config GREEN
 
-#define PED_TOTAL_TIME 10    // thời gian người đi bộ được đi
-#define PED_BLINK_TIME 3     // 5s cuối nhấp nháy
+// ================== TRAFFIC STATES ======================
+#define AUTO_R1_G2 0
+#define AUTO_R1_Y2 1
+#define AUTO_G1_R2 2
+#define AUTO_Y1_R2 3
 
-#define PED_GREEN_CYCLES 3
+// ================== PEDESTRIAN ==========================
+void Pedestrian_Init(void);
 
-// Operating Modes
-#define MODE_1         0    // Normal auto mode
-#define MODE_2         1    // Set RED time
-#define MODE_3         2    // Set YELLOW time
-#define MODE_4         3    // Set GREEN time
-#define MODE_5         4    // Pedestrian modes
+// ================== FSM FUNCTIONS =======================
+void enterState(int newState,
+                int r1, int y1, int g1,
+                int r2, int y2, int g2);
 
-extern int status;
-extern int mode;
-
-// FSM Functions
-void FSM_Init(void);                    // Initialize FSM with scheduler tasks
-void enterState(int new_state, int r1, int y1, int g1, int r2, int y2, int g2);
-void setTrafficLED(int r1, int y1, int g1, int r2, int y2, int g2);
-void check_button(void);
 void Task_FSM(void);
 void Task_BlinkLED(void);
-void Task_7Seg(void);
 
-void setPedestrian1LED(int red, int green);
-void setPedestrian2LED(int red, int green);
+// ================== OTHER FUNCTIONS ======================
+void check_button(void);
 
-//void check_pedestrian_button(void);
 #endif /* INC_FSM_H_ */
+

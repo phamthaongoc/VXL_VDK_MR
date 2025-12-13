@@ -1,0 +1,33 @@
+#ifndef INC_FSM_H_
+#define INC_FSM_H_
+
+#include "main.h"
+
+// ================== MODE DEFINITIONS ===================
+#define MODE_1 1   // Auto
+#define MODE_2 2   // Config RED
+#define MODE_3 3   // Config YELLOW
+#define MODE_4 4   // Config GREEN
+
+// ================== TRAFFIC STATES ======================
+#define AUTO_R1_G2 0
+#define AUTO_R1_Y2 1
+#define AUTO_G1_R2 2
+#define AUTO_Y1_R2 3
+
+// ================== PEDESTRIAN ==========================
+void Pedestrian_Init(void);
+
+// ================== FSM FUNCTIONS =======================
+void enterState(int newState,
+                int r1, int y1, int g1,
+                int r2, int y2, int g2);
+
+void Task_FSM(void);
+void Task_BlinkLED(void);
+
+// ================== OTHER FUNCTIONS ======================
+void check_button(void);
+
+#endif /* INC_FSM_H_ */
+S
